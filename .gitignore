@@ -3,4 +3,4 @@ build
 dist
 .noseids
 fandjango.egg-info
-
+*.swp

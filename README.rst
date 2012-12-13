@@ -1,39 +1,28 @@
-Fandjango
+Djangocanvas
 =========
 
-.. image:: https://secure.travis-ci.org/jgorset/fandjango.png?branch=master
-
-Fandjango makes it really easy to create Facebook applications with Django.
+Fandjango fork with django-vkontakte-iframe features
+(In simple terms you can use it to create Facebook and Vkontakte canvas applications)
 
 Usage
 -----
 
-::
+1. Add 'djangocanvas' to ``INSTALLED_APPS``
 
-    @facebook_authorization_required
-    def greet(request):
-        return HttpResponse('Hi, %s!' % request.facebook.user.first_name)
+2. Add your app's settings to settings.py::
+        VK_APP_ID = '1234567'                   # Application ID
+        VK_APP_KEY = 'M1gytuHwni'               # Application key
+        VK_APP_SECRET = 'MiRFwrDYwcYFCTD18EcY'  # Secure key
+        
+        FACEBOOK_APPLICATION_ID = '1231231665812571'
+        FACEBOOK_APPLICATION_SECRET_KEY = '2134dfsdf68c97e17814113fbdaff31576621'
+        FACEBOOK_APPLICATION_NAMESPACE = ''
 
-If you'd like to create an application that's a little more elaborate, you should
-`read the documentation <http://readthedocs.org/docs/fandjango>`_.
+3. Put 'djangocanvas.middleware.IFrameFixMiddleware',
+    'djangocanvas.middleware.VkontakteMiddleware',
+    'djangocanvas.middleware.FacebookMiddleware' to ``MIDDLEWARE_CLASSES``
 
-Installation
-------------
+4. Run ``python ./manage.py syncdb``
 
-::
-
-    $ pip install fandjango
-
-Contribute
-----------
-
-* Fork the repository.
-* Do your thing.
-* Open a pull request.
-* Receive cake.
-
-I love you
-----------
-
-Johannes Gorset made this. You should `tweet me <http://twitter.com/jgorset>`_ if you can't get it
-to work. In fact, you should tweet me anyway.
+5. Put the following line as the 'First API request' ('Первый запрос к API') option (in your app edit page at vk.com)::
+        method=getProfiles&uids={viewer_id}&format=json&v=3.0&fields=uid,first_name,last_name,nickname,domain,sex,bdate,city,country,timezone,photo,photo_medium,photo_big,photo_rec,has_mobile,rate,contacts,education
