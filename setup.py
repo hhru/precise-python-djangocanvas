@@ -12,7 +12,11 @@ setup(
     description="Fandjango fork with django-vkontakte-iframe features",
     packages=[
         'djangocanvas',
-        'djangocanvas.templatetags'
+        'djangocanvas.templatetags',
+        'djangocanvas.api',
+        'djangocanvas.api.facepy',
+        'djangocanvas.api.vkontakte',
+        'djangocanvas.tests'
     ],
     package_data={
         'djangocanvas': [
