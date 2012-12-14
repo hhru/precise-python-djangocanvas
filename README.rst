@@ -19,9 +19,13 @@ Usage
         FACEBOOK_APPLICATION_SECRET_KEY = '2134dfsdf68c97e17814113fbdaff31576621'
         FACEBOOK_APPLICATION_NAMESPACE = ''
 
-3. Put 'djangocanvas.middleware.IFrameFixMiddleware',
-    'djangocanvas.middleware.VkontakteMiddleware',
-    'djangocanvas.middleware.FacebookMiddleware' to 'MIDDLEWARE_CLASSES'
+        'MIDDLEWARE_CLASSES' = {
+                ...
+                'djangocanvas.middleware.IFrameFixMiddleware',
+                'djangocanvas.middleware.VkontakteMiddleware',
+                'djangocanvas.middleware.FacebookMiddleware' 
+                ...
+        }
 
 4. Put the following line as the 'First API request' ('Первый запрос к API') 
    option (in your app edit page at vkontakte.ru)::
