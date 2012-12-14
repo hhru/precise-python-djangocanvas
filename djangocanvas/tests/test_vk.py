@@ -12,28 +12,30 @@ sys.path.insert(0, os.path.abspath('..'))
 
 import unittest
 import mock
-import vkontakte
-import vkontakte.api
+from djangocanvas.api import vkontakte
+from djangocanvas.api.vkontakte.api import _json_iterparse
 
 API_ID = 'api_id'
 API_SECRET = 'api_secret'
 
+
 class VkontakteTest(unittest.TestCase):
     def test_api_creation_error(self):
         self.assertRaises(ValueError, lambda: vkontakte.API())
+
 
 class SignatureTest(unittest.TestCase):
     def test_signature_supports_unicode(self):
         params = {'foo': u'клен'}
         self.assertEqual(
             vkontakte.signature(API_SECRET, params),
-            '560b3f1e09ff65167b8dc211604fed2b'
-        )
+            '560b3f1e09ff65167b8dc211604fed2b')
+
 
 class IterparseTest(unittest.TestCase):
     def test_iterparse(self):
         data = '{"error":{"error_code":8,"error_msg":"Invalid request: this auth method is obsolete, please use oauth. vk.com\/developers","request_params":[{"key":"sig","value":"97aasff03cc81d5db25de67893e207"},{"key":"uids","value":"1,2"},{"key":"timestamp","value":"1355095295"},{"key":"v","value":"3.0"},{"key":"fields","value":"education"},{"key":"format","value":"JSON"},{"key":"random","value":"937530097"},{"key":"method","value":"getProfiles"},{"key":"api_id","value":"3267523"}]}}{"error":{"error_code":8,"error_msg":"Invalid request: this auth method is obsolete, please use oauth. vk.com\/developers","request_params":[{"key":"sig","value":"97aasff03cc81d5db25de67893e207"},{"key":"uids","value":"1,2"},{"key":"timestamp","value":"1355095295"},{"key":"v","value":"3.0"},{"key":"fields","value":"education"},{"key":"format","value":"JSON"},{"key":"random","value":"937530097"},{"key":"method","value":"getProfiles"},{"key":"api_id","value":"3267523"}]}}{"response":[{"uid":1,"first_name":"Павел","last_name":"Дуров","university":1,"university_name":"СПбГУ","faculty":15,"faculty_name":"Филологический","graduation":2006},{"uid":2,"first_name":"Александра","last_name":"Владимирова"}]}'
-        parses = list(vkontakte.api._json_iterparse(data))
+        parses = list(_json_iterparse(data))
         self.assertEqual(len(parses),  3)
         assert "error" in parses[0]
         assert "error" in parses[1]
@@ -44,7 +46,6 @@ class IterparseTest(unittest.TestCase):
         parses = list(vkontakte.api._json_iterparse(data))
         self.assertEqual(parses[0]["error"]["}{"], "foo")
         self.assertEqual(parses[1]["foo"], "bar")
-
 
 
 class VkontakteMagicTest(unittest.TestCase):

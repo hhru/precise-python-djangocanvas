@@ -7,9 +7,10 @@ Fandjango fork with django-vkontakte-iframe features
 Usage
 -----
 
-1. Add 'djangocanvas' to ``INSTALLED_APPS``
+1. Add 'djangocanvas' to 'INSTALLED_APPS'
 
 2. Add your app's settings to settings.py::
+        
         VK_APP_ID = '1234567'                   # Application ID
         VK_APP_KEY = 'M1gytuHwni'               # Application key
         VK_APP_SECRET = 'MiRFwrDYwcYFCTD18EcY'  # Secure key
@@ -20,9 +21,9 @@ Usage
 
 3. Put 'djangocanvas.middleware.IFrameFixMiddleware',
     'djangocanvas.middleware.VkontakteMiddleware',
-    'djangocanvas.middleware.FacebookMiddleware' to ``MIDDLEWARE_CLASSES``
+    'djangocanvas.middleware.FacebookMiddleware' to 'MIDDLEWARE_CLASSES'
 
-4. Run ``python ./manage.py syncdb``
+4. Put the following line as the 'First API request' ('Первый запрос к API') 
+   option (in your app edit page at vkontakte.ru)::
 
-5. Put the following line as the 'First API request' ('Первый запрос к API') option (in your app edit page at vk.com)::
         method=getProfiles&uids={viewer_id}&format=json&v=3.0&fields=uid,first_name,last_name,nickname,domain,sex,bdate,city,country,timezone,photo,photo_medium,photo_big,photo_rec,has_mobile,rate,contacts,education

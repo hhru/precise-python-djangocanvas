@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from urlparse import parse_qs
 
-from facepy.graph_api import GraphAPI
+from graph_api import GraphAPI
 
 
 def get_extended_access_token(access_token, application_id, application_secret_key):

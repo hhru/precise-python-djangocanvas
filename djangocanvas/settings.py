@@ -18,13 +18,13 @@ FACEBOOK_APPLICATION_SECRET_KEY = getattr(settings, 'FACEBOOK_APPLICATION_SECRET
 FACEBOOK_APPLICATION_NAMESPACE = getattr(settings, 'FACEBOOK_APPLICATION_NAMESPACE')
 
 # A list of regular expressions describing paths on which Fandjango should be disabled.
-DISABLED_PATHS = getattr(settings, 'FANDJANGO_DISABLED_PATHS', [])
+DISABLED_PATHS = getattr(settings, 'DJANGOCANVAS_DISABLED_PATHS', [])
 
 # A list of regular expressions describing paths on which Fandjango should be enabled.
-ENABLED_PATHS = getattr(settings, 'FANDJANGO_ENABLED_PATHS', [])
+ENABLED_PATHS = getattr(settings, 'DJANGOCANVAS_ENABLED_PATHS', [])
 
 # A string describing a view that will be rendered for users that refuse to authorize the application.
-AUTHORIZATION_DENIED_VIEW = getattr(settings, 'FANDJANGO_AUTHORIZATION_DENIED_VIEW', 'fandjango.views.authorization_denied')
+AUTHORIZATION_DENIED_VIEW = getattr(settings, 'DJANGOCANVAS_AUTHORIZATION_DENIED_VIEW', 'djangocanvas.views.authorization_denied')
 
 # A list of strings describing `permissions <http://developers.facebook.com/docs/reference/api/permissions/>`_
 # that will be requested upon authorizing the application.

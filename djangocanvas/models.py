@@ -6,7 +6,7 @@ from django.db import models
 
 from djangocanvas.settings import FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_SECRET_KEY
 
-from facepy import GraphAPI
+from djangocanvas.api.facepy import GraphAPI
 
 
 class Facebook:

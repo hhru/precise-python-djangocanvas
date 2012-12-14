@@ -25,7 +25,6 @@ class FacebookMiddleware():
 
     def process_request(self, request):
         """Process the signed request."""
-
         if ENABLED_PATHS and DISABLED_PATHS:
             raise ImproperlyConfigured(
                 'You may configure either FANDJANGO_ENABLED_PATHS '

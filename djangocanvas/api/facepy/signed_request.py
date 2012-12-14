@@ -9,7 +9,7 @@ import time
 
 from datetime import datetime
 
-from facepy.exceptions import *
+from exceptions import *
 
 
 class SignedRequest(object):
@@ -76,7 +76,7 @@ class SignedRequest(object):
 
         app_token = get_application_access_token(self.application_id, self.application_secret_key)
         graph = GraphAPI(app_token)
-        
+
         qs = graph.get('oauth/access_token', code=self.raw['code'], redirect_uri='', client_id=self.application_id, client_secret=self.application_secret_key)
         self.raw['oauth_token'] = parse_qs(qs)['access_token'][0]
         #import ipdb; ipdb.set_trace()

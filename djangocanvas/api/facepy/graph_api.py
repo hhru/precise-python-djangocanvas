@@ -6,7 +6,7 @@ import requests
 
 from urllib import urlencode
 
-from facepy.exceptions import *
+from exceptions import *
 
 
 class GraphAPI(object):
