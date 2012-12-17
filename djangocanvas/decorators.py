@@ -1,9 +1,10 @@
 from functools import wraps
+from django.http import HttpResponseRedirect
 
-from fandjango.utils import get_post_authorization_redirect_url
-from fandjango.views import authorize_application
-from fandjango.settings import FACEBOOK_APPLICATION_INITIAL_PERMISSIONS
-from fandjango.settings import FACEBOOK_AUTHORIZATION_REDIRECT_URL
+from djangocanvas.utils import get_post_authorization_redirect_url
+from djangocanvas.views import authorize_application
+from djangocanvas.settings import FACEBOOK_APPLICATION_INITIAL_PERMISSIONS
+from djangocanvas.settings import FACEBOOK_AUTHORIZATION_REDIRECT_URL
 
 
 def facebook_authorization_required(redirect_uri=FACEBOOK_AUTHORIZATION_REDIRECT_URL, permissions=None):
@@ -55,3 +56,12 @@ def facebook_authorization_required(redirect_uri=FACEBOOK_AUTHORIZATION_REDIRECT
         return decorator(function)
     else:
         return decorator
+
+
+def social_login_required(function):
+    def wrapper(request, *args, **kwargs):
+        if getattr(request, 'social_user', None):
+            return function(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect('/')
+    return wrapper

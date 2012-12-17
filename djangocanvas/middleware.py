@@ -20,6 +20,19 @@ DEFAULT_P3P_POLICY = 'IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR I
 P3P_POLICY = getattr(settings, 'VK_P3P_POLICY', DEFAULT_P3P_POLICY)
 
 
+def social_login(request, user):
+    request.session['_social_auth_user_id'] = user.pk
+
+
+class SocialAuthenticationMiddleware(object):
+    def process_request(self, request):
+        social_user_id = request.session.get('_social_auth_user_id', None)
+        try:
+            request.social_user = SocialUser.objects.get(id=social_user_id)
+        except SocialUser.DoesNotExist:
+            request.social_user = None
+
+
 class FacebookMiddleware():
     """Middleware for Facebook applications."""
 
@@ -123,7 +136,7 @@ class FacebookMiddleware():
                     except:
                         pass
 
-                request.social_user = social_user
+                social_login(request, social_user)
 
         # ... no signed request found.
         else:
@@ -173,7 +186,7 @@ class VkontakteMiddleware():
         if social_user:
             social_user.authorized = True
             social_user.save()
-            request.social_user = social_user
+            social_login(request, social_user)
 
             if hasattr(request, 'session'):
                 startup_vars = vk_form.cleaned_data
@@ -226,4 +239,5 @@ class IFrameFixMiddleware(object):
         """
         response["P3P"] = 'CP="%s"' % P3P_POLICY
         return response
+
 
