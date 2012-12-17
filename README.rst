@@ -23,8 +23,9 @@ Usage
                 ...
                 'djangocanvas.middleware.IFrameFixMiddleware',
                 'djangocanvas.middleware.VkontakteMiddleware',
-                'djangocanvas.middleware.FacebookMiddleware' 
+                'djangocanvas.middleware.FacebookMiddleware', 
                 ...
+                'djangocanvas.middleware.SocialAuthenticationMiddleware',
         }
 
 4. Put the following line as the 'First API request' ('Первый запрос к API') 
