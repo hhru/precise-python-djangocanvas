@@ -9,7 +9,7 @@ try:
     import simplejson as json
 except ImportError:
     import json
-from vkontakte import http
+import http
 
 API_URL = 'http://api.vk.com/api.php'
 SECURE_API_URL = 'https://api.vkontakte.ru/method/'

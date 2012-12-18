@@ -1,1 +1,1 @@
-from vkontakte.api import API, VKError, signature
+from api import API, VKError, signature
