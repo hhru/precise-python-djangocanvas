@@ -82,6 +82,9 @@ class SocialUser(models.Model):
     oauth_token = models.OneToOneField(u'OAuthtoken', blank=True, null=True,
                                        related_name='social_user')
 
+    def __unicode__(self):
+        return '%s, %s' % (self.social_id, self.provider)
+
     class Meta:
         verbose_name = u'Пользователь социальной сети'
         verbose_name_plural = u'Пользователи социальной сети'

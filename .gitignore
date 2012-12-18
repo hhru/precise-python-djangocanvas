@@ -4,3 +4,10 @@ dist
 .noseids
 fandjango.egg-info
 *.swp
+*.debhelper
+build/
+debian/djangocanvas
+*.log
+*.substvars
+debian/python-module-stampdir/
+djangocanvas.egg-info/
