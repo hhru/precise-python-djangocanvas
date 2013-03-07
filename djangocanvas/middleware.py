@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from djangocanvas.views import authorize_application
 from djangocanvas.models import Facebook, OAuthToken, SocialUser
 from djangocanvas.settings import (
-    FACEBOOK_APPLICATION_SECRET_KEY, FANDJANGO_CACHE_SIGNED_REQUEST, DISABLED_PATHS, ENABLED_PATHS
+    FACEBOOK_APPLICATION_SECRET_KEY, FANDJANGO_CACHE_SIGNED_REQUEST, DISABLED_PATHS, ENABLED_PATHS, VK_APP_ID, VK_APP_SECRET
 )
 from djangocanvas.utils import (
     is_disabled_path, is_enabled_path,

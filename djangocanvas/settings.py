@@ -1,5 +1,3 @@
-from warnings import warn
-
 from django.conf import settings
 
 # A string describing the Facebook application's ID.
@@ -35,3 +33,6 @@ FACEBOOK_APPLICATION_DOMAIN = getattr(settings, 'FACEBOOK_APPLICATION_DOMAIN', '
 
 # A boolean describing whether to cache the signed request.
 FANDJANGO_CACHE_SIGNED_REQUEST = getattr(settings, 'FACEBOOK_SIGNED_REQUEST_COOKIE', True)
+
+VK_APP_ID = getattr(settings, 'VK_APP_ID', None)
+VK_APP_SECRET = getattr(settings, 'VK_APP_SECRET', None)

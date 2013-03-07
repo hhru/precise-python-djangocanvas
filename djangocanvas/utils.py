@@ -2,6 +2,7 @@ import re
 from datetime import timedelta
 from urlparse import urlparse
 from functools import wraps
+from urllib import quote_plus
 
 from django.core.cache import cache
 from django.utils.importlib import import_module
@@ -12,6 +13,10 @@ from djangocanvas.settings import FACEBOOK_APPLICATION_NAMESPACE
 from djangocanvas.settings import DISABLED_PATHS
 from djangocanvas.settings import ENABLED_PATHS
 from djangocanvas.settings import AUTHORIZATION_DENIED_VIEW
+from djangocanvas.settings import VK_APP_ID, VK_APP_SECRET, FACEBOOK_APPLICATION_ID, \
+    FACEBOOK_APPLICATION_SECRET_KEY
+from djangocanvas.api import vkontakte
+from djangocanvas.api.facepy import GraphAPI, get_application_access_token
 
 
 def is_disabled_path(path):
@@ -93,3 +98,16 @@ def get_post_authorization_redirect_url(request):
     }
 
     return redirect_uri
+
+
+def send_notification(user, message):
+    if user.provider == 'vkontakte':
+        vkapi = vkontakte.API(api_id=VK_APP_ID,
+                              api_secret=VK_APP_SECRET)
+        vkapi.get('secure.sendNotification', client_secret=VK_APP_SECRET, uid=user.social_id, message=message)
+    else:
+        token = get_application_access_token(FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_SECRET_KEY)
+        graph = GraphAPI(token)
+        graph.post('/{social_id}/notifications?access_token={token}&template={message}'.format(social_id=user.social_id,
+                                                                                               token=token,
+                                                                                               message=quote_plus(message.encode('utf-8'))))

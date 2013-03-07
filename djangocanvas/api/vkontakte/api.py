@@ -2,6 +2,7 @@
 import random
 import time
 import urllib
+import urllib2
 import warnings
 from hashlib import md5
 from functools import partial
@@ -12,6 +13,7 @@ except ImportError:
 import http
 
 API_URL = 'http://api.vk.com/api.php'
+OPEN_API_URL = 'https://oauth.vk.com/'
 SECURE_API_URL = 'https://api.vkontakte.ru/method/'
 DEFAULT_TIMEOUT = 1
 REQUEST_ENCODING = 'utf8'
@@ -21,14 +23,15 @@ REQUEST_ENCODING = 'utf8'
 # http://vk.com/developers.php?o=-1&p=%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%BD%D1%8B%D0%B5_%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D1%8B_API&s=0
 # http://vk.com/developers.php?o=-1&p=%D0%9E%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5_%D0%BC%D0%B5%D1%82%D0%BE%D0%B4%D0%BE%D0%B2_API&s=0
 COMPLEX_METHODS = ['secure', 'ads', 'messages', 'likes', 'friends',
-    'groups', 'photos', 'wall', 'newsfeed', 'notifications', 'audio',
-    'video', 'docs', 'places', 'storage', 'notes', 'pages',
-    'activity', 'offers', 'questions', 'subscriptions',
-    'users', 'status', 'polls', 'account', 'auth', 'stats']
+                   'groups', 'photos', 'wall', 'newsfeed', 'notifications', 'audio',
+                   'video', 'docs', 'places', 'storage', 'notes', 'pages',
+                   'activity', 'offers', 'questions', 'subscriptions',
+                   'users', 'status', 'polls', 'account', 'auth', 'stats']
 
 
 class VKError(Exception):
     __slots__ = ["error"]
+
     def __init__(self, error_data):
         self.error = error_data
         Exception.__init__(self, str(self))
@@ -48,6 +51,7 @@ class VKError(Exception):
     def __str__(self):
         return "Error(code = '%s', description = '%s', params = '%s')" % (self.code, self.description, self.params)
 
+
 def _encode(s):
     if isinstance(s, (dict, list, tuple)):
         s = json.dumps(s, ensure_ascii=False, encoding=REQUEST_ENCODING)
@@ -55,7 +59,8 @@ def _encode(s):
     if isinstance(s, unicode):
         s = s.encode(REQUEST_ENCODING)
 
-    return s # this can be number, etc.
+    return s  # this can be number, etc.
+
 
 def _json_iterparse(response):
     response = response.strip()
@@ -65,9 +70,11 @@ def _json_iterparse(response):
         obj, idx = decoder.raw_decode(response, idx)
         yield obj
 
+
 def signature(api_secret, params):
     keys = sorted(params.keys())
-    param_str = "".join(["%s=%s" % (str(key), _encode(params[key])) for key in keys])
+    param_str = "".join(
+        ["%s=%s" % (str(key), _encode(params[key])) for key in keys])
     return md5(param_str + str(api_secret)).hexdigest()
 
 # We have to support this:
@@ -78,17 +85,29 @@ def signature(api_secret, params):
 #
 # It works this way: API class has 'get' method but _API class doesn't.
 
+
 class _API(object):
     def __init__(self, api_id=None, api_secret=None, token=None, **defaults):
 
         if not (api_id and api_secret or token):
-            raise ValueError("Arguments api_id and api_secret or token are required")
+            raise ValueError(
+                "Arguments api_id and api_secret or token are required")
 
         self.api_id = api_id
         self.api_secret = api_secret
         self.token = token
         self.defaults = defaults
         self.method_prefix = ''
+
+    def get_server_access_token(self):
+        try:
+            url = urllib2.urlopen(
+                '{oauth_url}access_token?client_id={api_id}&client_secret={api_secret}&grant_type=client_credentials'.format(oauth_url=OPEN_API_URL,
+                                                                                                                             api_id=self.api_id,
+                                                                                                                             api_secret=self.api_secret))
+            return json.loads(url.read())['access_token']
+        except urllib2.URLError:
+            return None
 
     def _get(self, method, timeout=DEFAULT_TIMEOUT, **kwargs):
         status, response = self._request(method, timeout=timeout, **kwargs)
@@ -116,7 +135,8 @@ class _API(object):
         Support for api.<method>.<methodName> syntax
         '''
         if name in COMPLEX_METHODS:
-            api = _API(api_id=self.api_id, api_secret=self.api_secret, token=self.token, **self.defaults)
+            api = _API(api_id=self.api_id, api_secret=self.api_secret,
+                       token=self.token, **self.defaults)
             api.method_prefix = name + '.'
             return api
 
@@ -136,6 +156,8 @@ class _API(object):
 
         for key, value in kwargs.iteritems():
             kwargs[key] = _encode(value)
+
+        #self.token = self.token if self.token is not None else self.get_server_access_token()
 
         if self.token:
             # http://vkontakte.ru/developers.php?oid=-1&p=Выполнение_запросов_к_API
