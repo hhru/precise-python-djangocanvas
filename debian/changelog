@@ -1,8 +1,8 @@
 djangocanvas (0.1) unstable; urgency=low
 
   * @EWD-588 Initial commit;
-  * @EWD-588 add support to vk.com authorization
-  * @EWD-588 add tests, some fixes, update readme
-  * @EWD-588 add support for user notification
+    @EWD-588 add support to vk.com authorization
+    @EWD-588 add tests, some fixes, update readme
+    @EWD-588 add support for user notification
 
- -- Anton Volozhanin <zzzombat@gmail.com> Fri, 14 Dec 2012 16:13:40 +0400 
+ -- Anton Volozhanin <zzzombat@gmail.com>  Tue, 7 Mar 2013 13:22:23 +0400
