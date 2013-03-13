@@ -138,6 +138,11 @@ class FacebookMiddleware():
 
                 social_login(request, social_user)
 
+            else:
+                return authorize_application(
+                    request=request,
+                    redirect_uri=get_post_authorization_redirect_url(request))
+
         # ... no signed request found.
         else:
             request.facebook = False
