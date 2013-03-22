@@ -12,3 +12,6 @@ debian/python-djangocanvas
 *.substvars
 debian/python-module-stampdir/
 djangocanvas.egg-info/
+
+debian/*/*
+debian/files
