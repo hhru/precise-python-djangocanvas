@@ -7,7 +7,7 @@ fandjango.egg-info
 *.debhelper
 build/
 debian/djangocanvas
-debian/precise-python-djangocanvas
+debian/python-djangocanvas
 *.log
 *.substvars
 debian/python-module-stampdir/
