@@ -2,7 +2,7 @@ Source: djangocanvas
 Section: python
 Priority: optional
 Maintainer: Alex Dvoretsky (hh.ru project package signing) <alex@dvoretsky.name>
-Build-Depends: 
+Build-Depends:
   cdbs,
   debhelper (>= 7.0.50~),
   python-support (>=1.0),
@@ -13,8 +13,8 @@ Standards-Version: 3.9.2
 
 Package: python-djangocanvas
 Architecture: all
-Depends: 
-  ${misc:Depends}, 
+Depends:
+  ${misc:Depends},
   ${python:Depends},
   python (>= 2.6.5),
   python (<< 3.0),
@@ -23,3 +23,5 @@ Depends:
   python-pkg-resources,
   python-requests (>= 0.8.2-1)
 Provides: ${python:Provides}
+Description: Django library that provides tools to build canvas applications for VK and Facebook
+ Django library that provides tools to build canvas applications for VK and Facebook
