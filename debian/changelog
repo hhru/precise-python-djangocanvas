@@ -1,3 +1,9 @@
+djangocanvas (0.1.1) unstable; urgency=low
+
+  * add Description debian/control to escape warnings
+
+ -- Alex Dvoretsky <alex@dvoretsky.name>  Thu, 04 Apr 2013 14:52:51 +0400
+
 djangocanvas (0.1) unstable; urgency=low
 
   * EWD-588 Initial commit;
