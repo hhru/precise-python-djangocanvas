@@ -32,8 +32,17 @@ class SocialAuthenticationMiddleware(object):
         except SocialUser.DoesNotExist:
             request.social_user = None
 
+class SocialMiddleware(object):
+    """
+    Base middleware which should handle general events like register/auth user,
+    set user is new etc
+    """
 
-class FacebookMiddleware():
+    def _set_user_is_new(self, request):
+        request.social_user_is_new = True
+
+
+class FacebookMiddleware(SocialMiddleware):
     """Middleware for Facebook applications."""
 
     def process_request(self, request):
@@ -83,7 +92,6 @@ class FacebookMiddleware():
 
             # Valid signed request and user has authorized the application
             if request.facebook and request.facebook.signed_request.user.has_authorized_application:
-
                 # Redirect to Facebook Authorization if the OAuth token has expired
                 if request.facebook.signed_request.user.oauth_token.has_expired:
                     return authorize_application(
@@ -109,9 +117,11 @@ class FacebookMiddleware():
 
                     social_user.first_name = profile.get('first_name')
                     social_user.last_name = profile.get('last_name')
+
                     social_user.save()
 
                     request.social_data = graph
+                    self._set_user_is_new(request)
 
                 # Update the user's details and OAuth token
                 else:
@@ -162,7 +172,7 @@ class FacebookMiddleware():
         return response
 
 
-class VkontakteMiddleware():
+class VkontakteMiddleware(SocialMiddleware):
     def process_request(self, request):
         if 'viewer_id' not in request.GET:
             self._patch_request_with_vkapi(request)
@@ -180,13 +190,14 @@ class VkontakteMiddleware():
 
         social_user, created = SocialUser.objects.get_or_create(social_id=social_id,
                                                                 provider='vkontakte')
-
         if created:
             vk_profile = vk_form.profile_api_result()
             if vk_profile:
                 social_user.first_name = vk_profile['first_name']
                 social_user.last_name = vk_profile['last_name']
                 social_user.save()
+                request.vk_profile = vk_profile
+                self._set_user_is_new(request)
 
         if social_user:
             social_user.authorized = True
@@ -244,5 +255,3 @@ class IFrameFixMiddleware(object):
         """
         response["P3P"] = 'CP="%s"' % P3P_POLICY
         return response
-
-
