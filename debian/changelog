@@ -1,3 +1,9 @@
+djangocanvas (0.1.2) unstable; urgency=low
+
+  * property setting to request for new social_user
+
+ -- Andrey Knyazev <knevcher@gmail.com>  Tue, 02 Jul 2013 12:32:43 +0400
+
 djangocanvas (0.1.1) unstable; urgency=low
 
   * add Description debian/control to escape warnings
