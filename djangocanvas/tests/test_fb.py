@@ -1,3 +1,5 @@
+import djangocanvas.settings
+
 from datetime import datetime, timedelta
 
 from django.test import TestCase
@@ -7,6 +9,8 @@ from django.core.urlresolvers import reverse
 from djangocanvas.middleware import FacebookMiddleware
 from djangocanvas.models import SocialUser
 from djangocanvas.api.facepy import GraphAPI, SignedRequest
+from djangocanvas.tests.helpers import set_tests_stubs
+
 
 TEST_APPLICATION_ID = '508667665812571'
 TEST_APPLICATION_SECRET = 'ca52168c97e17814113fbd686e576621'
@@ -16,6 +20,10 @@ request_factory = RequestFactory()
 
 
 class FacebookBackendTest(TestCase):
+    def setUp(self):
+        djangocanvas.settings.FACEBOOK_APPLICATION_SECRET_KEY = TEST_APPLICATION_SECRET
+        djangocanvas.settings.FACEBOOK_APPLICATION_ID = TEST_APPLICATION_ID
+
     def tearDown(self):
         SocialUser.objects.all().delete()
 
@@ -53,6 +61,7 @@ class FacebookBackendTest(TestCase):
         # so verifying its status code will have to suffice.
         assert response.status_code == 403
 
+    @set_tests_stubs()
     def test_application_deauthorization(self):
         """
         Verify that users are marked as deauthorized upon
@@ -93,11 +102,11 @@ class FacebookBackendTest(TestCase):
         # so verifying its status code will have to suffice.
         assert response.status_code == 401
 
+    @set_tests_stubs()
     def test_registration(self):
         """
         Verify that authorizing the application will register a new user.
         """
-
         self.client.post(
             path=reverse('home'),
             data={
@@ -111,6 +120,7 @@ class FacebookBackendTest(TestCase):
         assert user.first_name == graph.get('me')['first_name']
         assert user.last_name == graph.get('me')['last_name']
 
+    @set_tests_stubs()
     def test_extend_oauth_token(self):
         """
         Verify that OAuth access tokens may be extended.
@@ -123,10 +133,9 @@ class FacebookBackendTest(TestCase):
         )
 
         user = SocialUser.objects.get(id=1)
-
-        user.oauth_token.extend()
+        with set_tests_stubs(as_dictionary=False):
+            user.oauth_token.extend()
 
         # Facebook doesn't extend access tokens for test users, so asserting
         # the expiration time will have to suffice.
         assert user.oauth_token.expires_at
-
