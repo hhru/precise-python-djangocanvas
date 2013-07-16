@@ -15,10 +15,12 @@ from djangocanvas.utils import (
 from djangocanvas.api.facepy import SignedRequest, GraphAPI
 from djangocanvas.api import vkontakte
 from djangocanvas.forms import VkontakteIframeForm
+from logging import getLogger
 
 DEFAULT_P3P_POLICY = 'IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT'
 P3P_POLICY = getattr(settings, 'VK_P3P_POLICY', DEFAULT_P3P_POLICY)
 
+logger = getLogger('djangocanvas')
 
 def social_login(request, user):
     request.session['_social_auth_user_id'] = user.pk
@@ -30,6 +32,7 @@ class SocialAuthenticationMiddleware(object):
         try:
             request.social_user = SocialUser.objects.get(id=social_user_id)
         except SocialUser.DoesNotExist:
+            logger.warning(u'User with id "{0}" does not exist'.format(social_user_id))
             request.social_user = None
 
 class SocialMiddleware(object):
@@ -61,10 +64,12 @@ class FacebookMiddleware(SocialMiddleware):
 
         # An error occured during authorization...
         if 'error' in request.GET:
+            logger.warning(u'Facebook authorization error')
             error = request.GET['error']
 
             # The user refused to authorize the application...
             if error == 'access_denied':
+                logger.warning(u'Facebook user access denied')
                 return authorization_denied_view(request)
 
         # Signed request found in either GET, POST or COOKIES...
@@ -87,7 +92,8 @@ class FacebookMiddleware(SocialMiddleware):
                 request.facebook.signed_request = SignedRequest(
                     signed_request=request.REQUEST.get('signed_request') or request.COOKIES.get('signed_request'),
                     application_secret_key=FACEBOOK_APPLICATION_SECRET_KEY)
-            except SignedRequest.Error:
+            except SignedRequest.Error as ex:
+                logger.warning(u'Facebook signed request error: {0}'.format(str(ex)))
                 request.facebook = False
 
             # Valid signed request and user has authorized the application
@@ -99,9 +105,11 @@ class FacebookMiddleware(SocialMiddleware):
                         redirect_uri=get_post_authorization_redirect_url(request))
 
                 # Initialize a User object and its corresponding OAuth token
+                social_id = request.facebook.signed_request.user.id
                 try:
-                    social_user = SocialUser.objects.get(social_id=request.facebook.signed_request.user.id)
+                    social_user = SocialUser.objects.get(social_id=social_id)
                 except SocialUser.DoesNotExist:
+                    logger.info(u'Creating a new user (facebook id = {0})'.format(social_id))
                     oauth_token = OAuthToken.objects.create(
                         token=request.facebook.signed_request.user.oauth_token.token,
                         issued_at=request.facebook.signed_request.user.oauth_token.issued_at,
@@ -155,6 +163,7 @@ class FacebookMiddleware(SocialMiddleware):
 
         # ... no signed request found.
         else:
+            logger.warning(u'No facebook signed request was found')
             request.facebook = False
 
     def process_response(self, request, response):
@@ -175,15 +184,18 @@ class FacebookMiddleware(SocialMiddleware):
 class VkontakteMiddleware(SocialMiddleware):
     def process_request(self, request):
         if 'viewer_id' not in request.GET:
+            logger.warning(u'Vkontakte "viewer_id" parameter in the request was not specified')
             self._patch_request_with_vkapi(request)
             return
 
         vk_form = VkontakteIframeForm(request.GET)
 
         if not vk_form:
+            logger.warning(u'Vkontakte form getting promlem')
             return
 
         if not vk_form.is_valid():
+            logger.warning(u'Vkontakte form is not valid')
             return
 
         social_id = vk_form.vk_user_id()
@@ -191,6 +203,7 @@ class VkontakteMiddleware(SocialMiddleware):
         social_user, created = SocialUser.objects.get_or_create(social_id=social_id,
                                                                 provider='vkontakte')
         if created:
+            logger.info(u'Creating a new user (vkontakte id = {0})'.format(social_id))
             vk_profile = vk_form.profile_api_result()
             if vk_profile:
                 social_user.first_name = vk_profile['first_name']
@@ -212,6 +225,7 @@ class VkontakteMiddleware(SocialMiddleware):
 
         else:
             request.META['VKONTAKTE_LOGIN_ERRORS'] = vk_form.errors
+            logger.warning(u'Vkontakte login errors' + ': ' + ', '.join(vk_form.errors))
 
     def _patch_request_with_vkapi(self, request):
         """
