@@ -15,3 +15,7 @@ djangocanvas.egg-info/
 
 debian/*/*
 debian/files
+*~
+\#*
+\#*\#
+/.ropeproject
