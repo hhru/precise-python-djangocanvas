@@ -8,7 +8,9 @@ from djangocanvas.settings import (
     FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_DOMAIN,
     FACEBOOK_APPLICATION_NAMESPACE, FACEBOOK_APPLICATION_INITIAL_PERMISSIONS
 )
+from logging import getLogger
 
+logger = getLogger('djangocanvas')
 
 def authorize_application(
     request,
@@ -29,6 +31,7 @@ def authorize_application(
     if permissions:
         query['scope'] = ', '.join(permissions)
 
+    logger.info(u'Facebook application authorizing')
     return render(
         request=request,
         template_name='djangocanvas/authorize_application.html',
@@ -43,6 +46,7 @@ def authorization_denied(request):
     """
     Render a template for users that refuse to authorize the application.
     """
+    logger.warning(u'Application authorizing denied')
     return render(
         request=request,
         template_name='djangocanvas/authorization_denied.html',
@@ -57,6 +61,7 @@ def deauthorize_application(request):
     users as unauthorized.
     """
     if request.facebook:
+        logger.info(u'Facebook application deauthorization')
         user = SocialUser.objects.get(
             social_id=request.facebook.signed_request.user.id
         )
@@ -66,4 +71,5 @@ def deauthorize_application(request):
 
         return HttpResponse()
     else:
+        logger.info(u'Vkontakte application deauthorization')
         return HttpResponse(status=400)

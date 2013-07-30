@@ -5,6 +5,7 @@ from django import forms
 from django.conf import settings
 from django.utils import simplejson as json
 from django.utils.translation import check_for_language
+from logging import getLogger
 
 
 VIEWER_TYPES_GROUP = (
@@ -20,6 +21,8 @@ VIEWER_TYPES_USER = (
     (1, u'пользователь является участником группы'),
     (0, u'пользователь не состоит в группе'),
 )
+
+logger = getLogger('djangocanvas')
 
 
 class VkontakteIframeForm(forms.Form):
@@ -81,14 +84,17 @@ class VkontakteIframeForm(forms.Form):
         return md5(str(api_id) + '_' + str(viewer_id) + '_' + str(api_secret)).hexdigest()
 
     def clean_app_id(self):
-        if str(self.cleaned_data['app_id']) != str(settings.VK_APP_ID):
+        app_id = self.cleaned_data['app_id']
+        if str(app_id) != str(settings.VK_APP_ID):
+            logger.warning(u'Invalid application id ({0})').format(app_id)
             raise forms.ValidationError(u'app_id - от другого приложения')
-        return self.cleaned_data['app_id']
+        return app_id
 
     def clean_auth_key(self):
         correct_key = self.get_auth_key().lower()
         key = self.cleaned_data['auth_key'].lower()
         if correct_key != key:
+            logger.warning(u'Invalid authorization key ({0})').format(key)
             raise forms.ValidationError(u'Неверный ключ авторизации: %s != %s' % (key, correct_key,))
         return self.cleaned_data['auth_key']
 
@@ -112,12 +118,12 @@ class VkontakteIframeForm(forms.Form):
             if language[0] == int(self.cleaned_data['language']):
                 lang_code = language[1]
                 break
-        try:
-            if check_for_language(lang_code):
-                return lang_code
-        except AttributeError:
-            pass
-        return None
+
+        if check_for_language(lang_code):
+            return lang_code
+        else:
+            logger.info(u'Language code "{0}" not found'.format(lang_code))
+            return None
 
 
 class VkontakteOpenAPIForm(forms.Form):
@@ -142,6 +148,7 @@ class VkontakteOpenAPIForm(forms.Form):
         correct_key = self.get_auth_key().lower()
         key = self.cleaned_data['hash'].lower()
         if correct_key != key:
+            logger.warning(u'Invalid authorization key ({0})').format(key)
             raise forms.ValidationError(u'Неверный ключ авторизации: %s != %s' % (key, correct_key,))
         return self.cleaned_data['hash']
 
