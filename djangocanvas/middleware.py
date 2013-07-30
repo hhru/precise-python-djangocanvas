@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
+import djangocanvas.settings
+
 from django.conf import settings
 from django.http import QueryDict, HttpResponse
 from django.core.exceptions import ImproperlyConfigured
 
 from djangocanvas.views import authorize_application
 from djangocanvas.models import Facebook, OAuthToken, SocialUser
-from djangocanvas.settings import (
-    FACEBOOK_APPLICATION_SECRET_KEY, FANDJANGO_CACHE_SIGNED_REQUEST, DISABLED_PATHS, ENABLED_PATHS, VK_APP_ID, VK_APP_SECRET
-)
+
 from djangocanvas.utils import (
     is_disabled_path, is_enabled_path,
     authorization_denied_view, get_post_authorization_redirect_url
@@ -15,6 +15,7 @@ from djangocanvas.utils import (
 from djangocanvas.api.facepy import SignedRequest, GraphAPI
 from djangocanvas.api import vkontakte
 from djangocanvas.forms import VkontakteIframeForm
+
 
 DEFAULT_P3P_POLICY = 'IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT'
 P3P_POLICY = getattr(settings, 'VK_P3P_POLICY', DEFAULT_P3P_POLICY)
@@ -47,16 +48,16 @@ class FacebookMiddleware(SocialMiddleware):
 
     def process_request(self, request):
         """Process the signed request."""
-        if ENABLED_PATHS and DISABLED_PATHS:
+        if djangocanvas.settings.ENABLED_PATHS and djangocanvas.settings.DISABLED_PATHS:
             raise ImproperlyConfigured(
                 'You may configure either FANDJANGO_ENABLED_PATHS '
                 'or FANDJANGO_DISABLED_PATHS, but not both.'
             )
 
-        if DISABLED_PATHS and is_disabled_path(request.path):
+        if djangocanvas.settings.DISABLED_PATHS and is_disabled_path(request.path):
             return
 
-        if ENABLED_PATHS and not is_enabled_path(request.path):
+        if djangocanvas.settings.ENABLED_PATHS and not is_enabled_path(request.path):
             return
 
         # An error occured during authorization...
@@ -86,7 +87,8 @@ class FacebookMiddleware(SocialMiddleware):
             try:
                 request.facebook.signed_request = SignedRequest(
                     signed_request=request.REQUEST.get('signed_request') or request.COOKIES.get('signed_request'),
-                    application_secret_key=FACEBOOK_APPLICATION_SECRET_KEY)
+                    application_secret_key=djangocanvas.settings.FACEBOOK_APPLICATION_SECRET_KEY)
+
             except SignedRequest.Error:
                 request.facebook = False
 
@@ -165,7 +167,7 @@ class FacebookMiddleware(SocialMiddleware):
         browsers it is considered by IE before accepting third-party cookies (ie. cookies set by
         documents in iframes). If they are not set correctly, IE will not set these cookies.
         """
-        if FANDJANGO_CACHE_SIGNED_REQUEST:
+        if djangocanvas.settings.FANDJANGO_CACHE_SIGNED_REQUEST:
             if 'signed_request' in request.REQUEST:
                 response.set_cookie('signed_request', request.REQUEST['signed_request'])
             response['P3P'] = 'CP="IDC CURa ADMa OUR IND PHY ONL COM STA"'
