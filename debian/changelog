@@ -1,4 +1,4 @@
-djangocanvas (0.1.2) unstable; urgency=low
+djangocanvas (0.1.2) cf-stable; urgency=low
 
   * property setting to request for new social_user
 
