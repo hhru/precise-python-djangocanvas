@@ -94,7 +94,7 @@ class VkontakteIframeForm(forms.Form):
         correct_key = self.get_auth_key().lower()
         key = self.cleaned_data['auth_key'].lower()
         if correct_key != key:
-            logger.warning(u'Invalid authorization key ({0})').format(key)
+            logger.warning(u'Invalid authorization key ({0})'.format(key))
             raise forms.ValidationError(u'Неверный ключ авторизации: %s != %s' % (key, correct_key,))
         return self.cleaned_data['auth_key']
 
