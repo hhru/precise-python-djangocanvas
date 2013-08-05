@@ -237,7 +237,7 @@ class VkontakteMiddleware(SocialMiddleware):
         if hasattr(request, 'session'):
             if 'vk_startup_vars' in request.session:
                 token = request.session['vk_startup_vars']['access_token']
-                request.social_data = vkontakte.API(token=token)
+                request.social_data = vkontakte.API(api_id=settings.VK_APP_ID, api_secret=settings.VK_APP_SECRET, token=token)
 
 
 class IFrameFixMiddleware(object):

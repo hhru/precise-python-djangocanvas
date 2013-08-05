@@ -92,7 +92,6 @@ class _API(object):
         if not (api_id and api_secret or token):
             raise ValueError(
                 "Arguments api_id and api_secret or token are required")
-
         self.api_id = api_id
         self.api_secret = api_secret
         self.token = token
@@ -158,30 +157,18 @@ class _API(object):
             kwargs[key] = _encode(value)
 
         #self.token = self.token if self.token is not None else self.get_server_access_token()
-
-        if self.token:
-            # http://vkontakte.ru/developers.php?oid=-1&p=Выполнение_запросов_к_API
-            params = dict(
-                access_token=self.token,
-            )
-            params.update(kwargs)
-            params['timestamp'] = int(time.time())
-            url = SECURE_API_URL + method
-            secure = True
-        else:
-            # http://vkontakte.ru/developers.php?oid=-1&p=Взаимодействие_приложения_с_API
-            params = dict(
-                api_id=str(self.api_id),
-                method=method,
-                format='JSON',
-                v='3.0',
-                random=random.randint(0, 2 ** 30),
-            )
-            params.update(kwargs)
-            params['timestamp'] = int(time.time())
-            params['sig'] = self._signature(params)
-            url = API_URL
-            secure = False
+        params = dict(
+            api_id=str(self.api_id),
+            method=method,
+            format='JSON',
+            v='3.0',
+            random=random.randint(0, 2 ** 30),
+        )
+        params.update(kwargs)
+        params['timestamp'] = int(time.time())
+        params['sig'] = self._signature(params)
+        url = API_URL
+        secure = False
         data = urllib.urlencode(params)
 
         headers = {"Accept": "application/json",
