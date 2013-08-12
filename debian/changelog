@@ -1,3 +1,10 @@
+djangocanvas (0.1.3) cf-stable; urgency=low
+
+  * EWD-1148 EWD-1148 add logging
+    EWD-870 correct the bad djangocanvas tests
+
+ -- Andrey Knyazev <knevcher@gmail.com>  Mon, 12 Aug 2013 12:43:04 +0400
+
 djangocanvas (0.1.2) cf-stable; urgency=low
 
   * property setting to request for new social_user
