@@ -165,7 +165,6 @@ class FacebookMiddleware(SocialMiddleware):
 
         # ... no signed request found.
         else:
-            logger.warning(u'No facebook signed request was found')
             request.facebook = False
 
     def process_response(self, request, response):
@@ -186,7 +185,6 @@ class FacebookMiddleware(SocialMiddleware):
 class VkontakteMiddleware(SocialMiddleware):
     def process_request(self, request):
         if 'viewer_id' not in request.GET:
-            logger.warning(u'Vkontakte "viewer_id" parameter in the request was not specified')
             self._patch_request_with_vkapi(request)
             return
 

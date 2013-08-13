@@ -1,5 +1,6 @@
 from django.conf import settings
 
+
 # A string describing the Facebook application's ID.
 FACEBOOK_APPLICATION_ID = getattr(settings, 'FACEBOOK_APPLICATION_ID')
 
