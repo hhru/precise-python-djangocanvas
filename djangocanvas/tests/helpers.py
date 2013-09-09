@@ -39,7 +39,7 @@ class set_tests_stubs(object):
 
     def disable(self):
         SignedRequest.User.OAuthToken.has_expired = self.old_has_expired
-        GraphAPI.get = self.old_graph_get_method = GraphAPI.get
+        GraphAPI.get = self.old_graph_get_method
 
 
 @property
