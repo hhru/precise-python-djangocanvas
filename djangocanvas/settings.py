@@ -32,6 +32,8 @@ FACEBOOK_APPLICATION_INITIAL_PERMISSIONS = getattr(settings, 'FACEBOOK_APPLICATI
 # A string describing the Facebook's application's domain
 FACEBOOK_APPLICATION_DOMAIN = getattr(settings, 'FACEBOOK_APPLICATION_DOMAIN', 'apps.facebook.com')
 
+FACEBOOK_APPLICATION_DEFAULT_SCHEME = getattr(settings, 'FACEBOOK_APPLICATION_DEFAULT_SCHEME', 'http')
+
 # A boolean describing whether to cache the signed request.
 FANDJANGO_CACHE_SIGNED_REQUEST = getattr(settings, 'FACEBOOK_SIGNED_REQUEST_COOKIE', True)
 

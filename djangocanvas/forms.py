@@ -86,7 +86,7 @@ class VkontakteIframeForm(forms.Form):
     def clean_app_id(self):
         app_id = self.cleaned_data['app_id']
         if str(app_id) != str(settings.VK_APP_ID):
-            logger.warning(u'Invalid application id ({0})').format(app_id)
+            logger.warning(u'Invalid application id ({0})'.format(app_id))
             raise forms.ValidationError(u'app_id - от другого приложения')
         return app_id
 
@@ -94,7 +94,7 @@ class VkontakteIframeForm(forms.Form):
         correct_key = self.get_auth_key().lower()
         key = self.cleaned_data['auth_key'].lower()
         if correct_key != key:
-            logger.warning(u'Invalid authorization key ({0})').format(key)
+            logger.warning(u'Invalid authorization key ({0})'.format(key))
             raise forms.ValidationError(u'Неверный ключ авторизации: %s != %s' % (key, correct_key,))
         return self.cleaned_data['auth_key']
 
@@ -148,7 +148,7 @@ class VkontakteOpenAPIForm(forms.Form):
         correct_key = self.get_auth_key().lower()
         key = self.cleaned_data['hash'].lower()
         if correct_key != key:
-            logger.warning(u'Invalid authorization key ({0})').format(key)
+            logger.warning(u'Invalid authorization key ({0})'.format(key))
             raise forms.ValidationError(u'Неверный ключ авторизации: %s != %s' % (key, correct_key,))
         return self.cleaned_data['hash']
 

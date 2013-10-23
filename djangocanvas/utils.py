@@ -14,7 +14,7 @@ from djangocanvas.settings import DISABLED_PATHS
 from djangocanvas.settings import ENABLED_PATHS
 from djangocanvas.settings import AUTHORIZATION_DENIED_VIEW
 from djangocanvas.settings import VK_APP_ID, VK_APP_SECRET, FACEBOOK_APPLICATION_ID, \
-    FACEBOOK_APPLICATION_SECRET_KEY
+    FACEBOOK_APPLICATION_SECRET_KEY, FACEBOOK_APPLICATION_DEFAULT_SCHEME
 from djangocanvas.api import vkontakte
 from djangocanvas.api.facepy import GraphAPI, get_application_access_token
 
@@ -87,11 +87,13 @@ def authorization_denied_view(request):
 def get_post_authorization_redirect_url(request):
     """Determine the URL users should be redirected to upon authorization the application."""
     path = request.get_full_path()
+    url_scheme = request.META.get('HTTP_X_FORWARDED_PROTO', None) or FACEBOOK_APPLICATION_DEFAULT_SCHEME
 
     if FACEBOOK_APPLICATION_CANVAS_URL:
         path = path.replace(urlparse(FACEBOOK_APPLICATION_CANVAS_URL).path, '')
 
-    redirect_uri = 'http://%(domain)s/%(namespace)s%(path)s' % {
+    redirect_uri = '%(scheme)s://%(domain)s/%(namespace)s%(path)s' % {
+        'scheme': url_scheme,
         'domain': FACEBOOK_APPLICATION_DOMAIN,
         'namespace': FACEBOOK_APPLICATION_NAMESPACE,
         'path': path
