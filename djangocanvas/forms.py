@@ -1,9 +1,9 @@
 #coding: utf-8
-from hashlib import md5
+import json
 
+from hashlib import md5
 from django import forms
 from django.conf import settings
-from django.utils import simplejson as json
 from django.utils.translation import check_for_language
 from logging import getLogger
 

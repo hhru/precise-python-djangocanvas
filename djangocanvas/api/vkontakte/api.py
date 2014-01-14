@@ -1,16 +1,14 @@
 # coding: utf-8
+import json
 import random
 import time
 import urllib
 import urllib2
 import warnings
+import http
+
 from hashlib import md5
 from functools import partial
-try:
-    import simplejson as json
-except ImportError:
-    import json
-import http
 
 API_URL = 'http://api.vk.com/api.php'
 OPEN_API_URL = 'https://oauth.vk.com/'

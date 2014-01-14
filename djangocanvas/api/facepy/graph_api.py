@@ -1,7 +1,4 @@
-try:
-    import simplejson as json
-except ImportError:
-    import json  # flake8: noqa
+import json
 import requests
 
 from urllib import urlencode

@@ -1,10 +1,7 @@
 import base64
 import hashlib
 import hmac
-try:
-    import simplejson as json
-except ImportError:
-    import json  # flake8: noqa
+import json
 import time
 
 from datetime import datetime
