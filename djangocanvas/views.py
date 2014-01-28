@@ -3,14 +3,16 @@ from urllib import urlencode
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from djangocanvas.models import SocialUser
+from djangocanvas.backends import SocialUserModel
 from djangocanvas.settings import (
     FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_DOMAIN,
     FACEBOOK_APPLICATION_NAMESPACE, FACEBOOK_APPLICATION_INITIAL_PERMISSIONS
 )
 from logging import getLogger
 
+
 logger = getLogger('djangocanvas')
+
 
 def authorize_application(
     request,
@@ -62,7 +64,7 @@ def deauthorize_application(request):
     """
     if request.facebook:
         logger.info(u'Facebook application deauthorization')
-        user = SocialUser.objects.get(
+        user = SocialUserModel.objects.get(
             social_id=request.facebook.signed_request.user.id
         )
 

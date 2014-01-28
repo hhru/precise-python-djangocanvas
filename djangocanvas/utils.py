@@ -4,7 +4,10 @@ from urlparse import urlparse
 from functools import wraps
 from urllib import quote_plus
 
+from django.conf import settings
 from django.core.cache import cache
+from django.core.exceptions import ImproperlyConfigured
+from django.db.models.loading import get_model
 from django.utils.importlib import import_module
 
 from djangocanvas.settings import FACEBOOK_APPLICATION_CANVAS_URL
@@ -108,6 +111,19 @@ def send_notification(user, message):
     else:
         token = get_application_access_token(FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_SECRET_KEY)
         graph = GraphAPI(token)
-        graph.post('/{social_id}/notifications?access_token={token}&template={message}'.format(social_id=user.social_id,
-                                                                                               token=token,
-                                                                                               message=quote_plus(message.encode('utf-8'))))
+        graph.post(
+            '/{social_id}/notifications?access_token={token}&template={message}'
+            .format(social_id=user.social_id, token=token, message=quote_plus(message.encode('utf-8')))
+        )
+
+
+def get_social_user_model():
+    try:
+        app_label, model_name = settings.AUTH_SOCIAL_USER_MODEL.split('.')
+    except ValueError:
+        raise ImproperlyConfigured("AUTH_SOCIAL_USER_MODEL must be of the form 'app_label.model_name'")
+    user_model = get_model(app_label, model_name)
+    if user_model is None:
+        raise ImproperlyConfigured("AUTH_SOCIAL_USER_MODEL refers to model '{0}' that has not been installed"
+                                   .format(settings.AUTH_SOCIAL_USER_MODEL))
+    return user_model

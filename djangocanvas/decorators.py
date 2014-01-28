@@ -1,8 +1,11 @@
 from functools import wraps
 from django.http import HttpResponseRedirect
+# from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
 
-from djangocanvas.utils import get_post_authorization_redirect_url
+from djangocanvas.utils import authorization_denied_view, get_post_authorization_redirect_url
 from djangocanvas.views import authorize_application
+from djangocanvas.exceptions import FacebookAuthorizationDenied, FacebookAuthorizationError
 from djangocanvas.settings import FACEBOOK_APPLICATION_INITIAL_PERMISSIONS
 from djangocanvas.settings import FACEBOOK_AUTHORIZATION_REDIRECT_URL
 
@@ -58,10 +61,62 @@ def facebook_authorization_required(redirect_uri=FACEBOOK_AUTHORIZATION_REDIRECT
         return decorator
 
 
+def login(request, user):
+    SESSION_KEY = '_auth_user_id'
+    BACKEND_SESSION_KEY = '_auth_user_backend'
+    """
+    Persist a user id and a backend in the request. This way a user doesn't
+    have to reauthenticate on every request. Note that data set during
+    the anonymous session is retained when the user logs in.
+    """
+    if user is None:
+        user = request.user
+    # TODO: It would be nice to support different login methods, like signed cookies.
+    if SESSION_KEY in request.session:
+        if request.session[SESSION_KEY] != user.pk:
+            # To avoid reusing another user's session, create a new, empty
+            # session if the existing session corresponds to a different
+            # authenticated user.
+            request.session.flush()
+    else:
+        request.session.cycle_key()
+    request.session[SESSION_KEY] = user.pk
+    request.session[BACKEND_SESSION_KEY] = user.backend
+    if hasattr(request, 'user'):
+        request.user = user
+    # user_logged_in.send(sender=user.__class__, request=request, user=user)
+
+
 def social_login_required(function):
     def wrapper(request, *args, **kwargs):
-        if getattr(request, 'social_user', None):
+        if getattr(request.user, 'provider', False):
             return function(request, *args, **kwargs)
         else:
-            return HttpResponseRedirect('/')
+            try:
+                user = authenticate(request=request)
+            except FacebookAuthorizationDenied:
+                return authorization_denied_view(request)
+            except FacebookAuthorizationError:
+                return authorize_application(request=request,
+                                             redirect_uri=get_post_authorization_redirect_url(request))
+            if getattr(user, 'provider', False):
+                login(request, user)
+                return function(request, *args, **kwargs)
+            else:
+                return HttpResponseRedirect('/')
     return wrapper
+
+        # try:
+        #     user = authenticate(request=request)
+        # except FacebookAuthorizationDenied:
+        #     return authorization_denied_view(request)
+        # except FacebookAuthorizationError:
+        #     return authorize_application(
+        #         request=request,
+        #         redirect_uri=get_post_authorization_redirect_url(request)
+        #     )
+        # login(request, user)
+        # if getattr(request, 'social_user', None):
+        #     return function(request, *args, **kwargs)
+        # else:
+        #     return HttpResponseRedirect('/')

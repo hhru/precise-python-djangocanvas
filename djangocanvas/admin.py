@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import OAuthToken, SocialUser
+from djangocanvas.models import OAuthToken
 
 
 class SocialUserAdmin(admin.ModelAdmin):
@@ -9,5 +9,4 @@ class SocialUserAdmin(admin.ModelAdmin):
 class OAuthTokenAdmin(admin.ModelAdmin):
     list_display = ['social_user', 'issued_at', 'expires_at', 'expired']
 
-admin.site.register(SocialUser, SocialUserAdmin)
 admin.site.register(OAuthToken, OAuthTokenAdmin)

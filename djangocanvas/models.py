@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from urlparse import parse_qs
 
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser
 
 from djangocanvas.settings import FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_SECRET_KEY
 
@@ -73,7 +74,8 @@ class OAuthToken(models.Model):
         verbose_name_plural = 'OAuth tokens'
 
 
-class SocialUser(models.Model):
+# class AbstractSocialUser(AbstractBaseUser):
+class AbstractSocialUser(models.Model):
     social_id = models.BigIntegerField(verbose_name=u'Идентификатор в социальной сети', unique=True)
     provider = models.CharField(verbose_name=u'Социальная сеть', max_length=50)
     first_name = models.CharField(verbose_name=u'Имя', max_length=255, blank=True, null=True)
@@ -82,9 +84,52 @@ class SocialUser(models.Model):
     oauth_token = models.OneToOneField(u'OAuthtoken', blank=True, null=True,
                                        related_name='social_user')
 
-    def __unicode__(self):
-        return '%s, %s' % (self.social_id, self.provider)
+    USERNAME_FIELD = 'social_id'
 
     class Meta:
+        abstract = True
         verbose_name = u'Пользователь социальной сети'
         verbose_name_plural = u'Пользователи социальной сети'
+
+    def __unicode__(self):
+        return '{social_id}, {provider}'.format(social_id=self.social_id, provider=self.provider)
+
+    def get_full_name(self):
+        full_name = '{first_name} {last_name}'.format(first_name=self.first_name, last_name=self.last_name)
+        return full_name.strip()
+
+    def get_short_name(self):
+        return self.first_name
+
+    @classmethod
+    def create_facebook_user(cls, signed_request):
+        oauth_token = OAuthToken.objects.create(
+            token=signed_request.user.oauth_token.token,
+            issued_at=signed_request.user.oauth_token.issued_at,
+            expires_at=signed_request.user.oauth_token.expires_at)
+
+        social_user = cls.objects.create(
+            social_id=signed_request.user.id,
+            provider='facebook',
+            oauth_token=oauth_token)
+
+        graph = social_user.get_graph()
+        profile = graph.get('me')
+        social_user.first_name = profile.get('first_name')
+        social_user.last_name = profile.get('last_name')
+        social_user.save()
+
+        return social_user
+
+    def update_facebook_token(self, signed_request):
+        self.oauth_token.token = signed_request.user.oauth_token.token
+        self.oauth_token.issued_at = signed_request.user.oauth_token.issued_at
+        self.oauth_token.expires_at = signed_request.user.oauth_token.expires_at
+        self.oauth_token.save()
+
+    def get_graph(self):
+        return GraphAPI(self.oauth_token.token)
+
+    @classmethod
+    def create_vk_user(cls, vk_profile):
+        pass
