@@ -23,6 +23,7 @@ P3P_POLICY = getattr(settings, 'VK_P3P_POLICY', DEFAULT_P3P_POLICY)
 
 logger = getLogger('djangocanvas')
 
+
 def social_login(request, user):
     request.session['_social_auth_user_id'] = user.pk
 
@@ -35,6 +36,7 @@ class SocialAuthenticationMiddleware(object):
         except SocialUser.DoesNotExist:
             logger.warning(u'User with id "{0}" does not exist'.format(social_user_id))
             request.social_user = None
+
 
 class SocialMiddleware(object):
     """
@@ -84,7 +86,8 @@ class FacebookMiddleware(SocialMiddleware):
             #
             # References:
             # "POST for Canvas" migration at http://developers.facebook.com/docs/canvas/post/
-            # "Incorrect use of the HTTP protocol" discussion at http://forum.developers.facebook.net/viewtopic.php?id=93554
+            # "Incorrect use of the HTTP protocol" discussion at
+            # http://forum.developers.facebook.net/viewtopic.php?id=93554
             if request.method == 'POST' and 'signed_request' in request.POST:
                 request.POST = QueryDict('')
                 request.method = 'GET'
@@ -112,39 +115,11 @@ class FacebookMiddleware(SocialMiddleware):
                     social_user = SocialUser.objects.get(social_id=social_id)
                 except SocialUser.DoesNotExist:
                     logger.info(u'Creating a new user (facebook id = {0})'.format(social_id))
-                    oauth_token = OAuthToken.objects.create(
-                        token=request.facebook.signed_request.user.oauth_token.token,
-                        issued_at=request.facebook.signed_request.user.oauth_token.issued_at,
-                        expires_at=request.facebook.signed_request.user.oauth_token.expires_at)
-
-                    social_user = SocialUser.objects.create(
-                        social_id=request.facebook.signed_request.user.id,
-                        provider='facebook',
-                        oauth_token=oauth_token)
-
-                    graph = GraphAPI(social_user.oauth_token.token)
-                    profile = graph.get('me')
-
-                    social_user.first_name = profile.get('first_name')
-                    social_user.last_name = profile.get('last_name')
-
-                    social_user.save()
-
-                    request.social_data = graph
-                    self._set_user_is_new(request)
+                    social_user = self.create_new_facebook_user(request)
 
                 # Update the user's details and OAuth token
                 else:
-                    if 'signed_request' in request.REQUEST:
-                        social_user.authorized = True
-
-                        if request.facebook.signed_request.user.oauth_token:
-                            social_user.oauth_token.token = request.facebook.signed_request.user.oauth_token.token
-                            social_user.oauth_token.issued_at = request.facebook.signed_request.user.oauth_token.issued_at
-                            social_user.oauth_token.expires_at = request.facebook.signed_request.user.oauth_token.expires_at
-                            social_user.oauth_token.save()
-
-                    social_user.save()
+                    self.update_facebook_user(social_user, request)
 
                 if not social_user.oauth_token.extended:
                     # Attempt to extend the OAuth token, but ignore exceptions raised by
@@ -166,6 +141,23 @@ class FacebookMiddleware(SocialMiddleware):
         # ... no signed request found.
         else:
             request.facebook = False
+
+    def create_new_facebook_user(self, request):
+        oauth_token = OAuthToken.create_token(request.facebook.signed_request.user.oauth_token)
+        social_id = request.facebook.signed_request.user.id
+        graph = GraphAPI(oauth_token.token)
+        social_user = SocialUser.create_facebook_user(social_id, oauth_token, graph.get('me'))
+        request.social_data = graph
+        self._set_user_is_new(request)
+        return social_user
+
+    def update_facebook_user(self, social_user, request):
+        if 'signed_request' in request.REQUEST:
+            social_user.authorized = True
+            if request.facebook.signed_request.user.oauth_token:
+                social_user.oauth_token.update_token(request.facebook.signed_request.user.oauth_token)
+
+        social_user.save()
 
     def process_response(self, request, response):
         """
@@ -199,16 +191,13 @@ class VkontakteMiddleware(SocialMiddleware):
             return
 
         social_id = vk_form.vk_user_id()
-
-        social_user, created = SocialUser.objects.get_or_create(social_id=social_id,
-                                                                provider='vkontakte')
-        if created:
+        try:
+            social_user = SocialUser.objects.get(social_id=social_id)
+        except SocialUser.DoesNotExist:
             logger.info(u'Creating a new user (vkontakte id = {0})'.format(social_id))
             vk_profile = vk_form.profile_api_result()
             if vk_profile:
-                social_user.first_name = vk_profile['first_name']
-                social_user.last_name = vk_profile['last_name']
-                social_user.save()
+                social_user = SocialUser.create_vk_user(vk_profile)
                 request.vk_profile = vk_profile
                 self._set_user_is_new(request)
 

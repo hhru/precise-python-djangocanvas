@@ -37,6 +37,10 @@ class OAuthToken(models.Model):
     expires_at = models.DateTimeField(verbose_name=u'Expires at', null=True, blank=True)
     """A ``datetime`` object describing when the token expires (or ``None`` if it doesn't)"""
 
+    class Meta:
+        verbose_name = 'OAuth token'
+        verbose_name_plural = 'OAuth tokens'
+
     @property
     def expired(self):
         """Determine whether the OAuth token has expired."""
@@ -68,9 +72,19 @@ class OAuthToken(models.Model):
 
         self.save()
 
-    class Meta:
-        verbose_name = 'OAuth token'
-        verbose_name_plural = 'OAuth tokens'
+    @classmethod
+    def create_token(cls, oauth_token):
+        return cls.objects.create(
+            token=oauth_token.token,
+            issued_at=oauth_token.issued_at,
+            expires_at=oauth_token.expires_at
+        )
+
+    def update_token(self, oauth_token):
+        self.token = oauth_token.token
+        self.issued_at = oauth_token.issued_at
+        self.expires_at = oauth_token.expires_at
+        self.save()
 
 
 class SocialUser(models.Model):
@@ -82,9 +96,28 @@ class SocialUser(models.Model):
     oauth_token = models.OneToOneField(u'OAuthtoken', blank=True, null=True,
                                        related_name='social_user')
 
-    def __unicode__(self):
-        return '%s, %s' % (self.social_id, self.provider)
-
     class Meta:
         verbose_name = u'Пользователь социальной сети'
         verbose_name_plural = u'Пользователи социальной сети'
+
+    def __unicode__(self):
+        return '%s, %s' % (self.social_id, self.provider)
+
+    @classmethod
+    def create_facebook_user(cls, social_id, oauth_token, profile):
+        return cls.objects.create(
+            social_id=social_id,
+            provider='facebook',
+            oauth_token=oauth_token,
+            first_name=profile.get('first_name'),
+            last_name=profile.get('last_name'),
+        )
+
+    @classmethod
+    def create_vk_user(cls, vk_profile):
+        return cls.objects.create(
+            social_id=vk_profile['uid'],
+            provider='vkontakte',
+            first_name=vk_profile['first_name'],
+            last_name=vk_profile['last_name'],
+        )
