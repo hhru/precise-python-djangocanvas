@@ -6,9 +6,10 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.core.urlresolvers import reverse
 
-from djangocanvas.middleware import FacebookMiddleware
+from djangocanvas.backends import FacebookAuthBackend
 from djangocanvas.models import SocialUser
 from djangocanvas.api.facepy import GraphAPI, SignedRequest
+from djangocanvas.exceptions import FacebookAuthorizationError
 from djangocanvas.tests.helpers import set_tests_stubs
 
 
@@ -32,7 +33,7 @@ class FacebookBackendTest(TestCase):
         Verify that the request method is overridden
         from POST to GET if it contains a signed request.
         """
-        facebook_middleware = FacebookMiddleware()
+        facebook_backend = FacebookAuthBackend()
 
         request = request_factory.post(
             path=reverse('home'),
@@ -40,10 +41,10 @@ class FacebookBackendTest(TestCase):
                 'signed_request': TEST_SIGNED_REQUEST
             }
         )
+        with self.assertRaises(FacebookAuthorizationError):
+            facebook_backend.authenticate(request=request)
 
-        facebook_middleware.process_request(request)
-
-        assert request.method == 'GET'
+        self.assertEqual(request.method, 'GET')
 
     def test_authorization_denied(self):
         """

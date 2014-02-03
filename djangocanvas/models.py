@@ -116,8 +116,8 @@ class SocialUser(models.Model):
     @classmethod
     def create_vk_user(cls, vk_profile):
         return cls.objects.create(
-            social_id=vk_profile['uid'],
+            social_id=vk_profile.get('uid'),
             provider='vkontakte',
-            first_name=vk_profile['first_name'],
-            last_name=vk_profile['last_name'],
+            first_name=vk_profile.get('first_name'),
+            last_name=vk_profile.get('last_name'),
         )
