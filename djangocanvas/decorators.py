@@ -60,7 +60,7 @@ def facebook_authorization_required(redirect_uri=FACEBOOK_AUTHORIZATION_REDIRECT
 
 def social_login_required(function):
     def wrapper(request, *args, **kwargs):
-        if getattr(request, 'social_user', None):
+        if getattr(request, 'user', False) and hasattr(request.user, 'provider'):
             return function(request, *args, **kwargs)
         else:
             return HttpResponseRedirect('/')

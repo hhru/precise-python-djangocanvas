@@ -2,7 +2,7 @@
 import djangocanvas.settings
 
 from django.http import HttpResponse
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 
 from djangocanvas.views import authorize_application
 from djangocanvas.exceptions import FacebookAuthorizationDenied, FacebookAuthorizationError
@@ -23,7 +23,7 @@ logger = getLogger('djangocanvas')
 class SocialAuthenticationMiddleware(object):
     def process_request(self, request):
         try:
-            request.social_user = authenticate(request=request)
+            user = authenticate(request=request)
         except FacebookAuthorizationDenied:
             return authorization_denied_view(request)
         except FacebookAuthorizationError:
@@ -31,6 +31,8 @@ class SocialAuthenticationMiddleware(object):
                 request=request,
                 redirect_uri=get_post_authorization_redirect_url(request)
             )
+        if user:
+            login(request, user)
 
     def process_response(self, request, response):
         """

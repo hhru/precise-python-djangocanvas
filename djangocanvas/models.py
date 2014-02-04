@@ -3,9 +3,10 @@ from datetime import datetime, timedelta
 from urlparse import parse_qs
 
 from django.db import models
+from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from djangocanvas.settings import FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_SECRET_KEY
-
 from djangocanvas.api.facepy import GraphAPI
 
 
@@ -95,6 +96,16 @@ class SocialUser(models.Model):
     authorized = models.BooleanField(verbose_name=u'Авторизован', default=True)
     oauth_token = models.OneToOneField(u'OAuthtoken', blank=True, null=True,
                                        related_name='social_user')
+
+    # This field is required for correct login.
+    # Login function in Django send signal "user_logged_in" to which this field is updated.
+    last_login = models.DateTimeField(_('last login'), default=timezone.now)
+
+    # This field is required for correct render of flatpage.
+    is_active = True
+
+    # This field is required for correct render of flatpage.
+    is_staff = False
 
     class Meta:
         verbose_name = u'Пользователь социальной сети'
