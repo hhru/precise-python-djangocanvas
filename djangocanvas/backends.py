@@ -23,7 +23,7 @@ class BaseSocialAuthBackend(object):
 
     def get_social_user(self, social_id):
         try:
-            social_user = SocialUser.objects.get(social_id=social_id)
+            social_user = SocialUser.objects.get_by_natural_key(social_id)
         except SocialUser.DoesNotExist:
             social_user = None
         return social_user

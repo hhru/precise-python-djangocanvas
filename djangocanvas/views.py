@@ -12,6 +12,7 @@ from logging import getLogger
 
 logger = getLogger('djangocanvas')
 
+
 def authorize_application(
     request,
     redirect_uri='https://%s/%s' % (
@@ -62,9 +63,7 @@ def deauthorize_application(request):
     """
     if request.facebook:
         logger.info(u'Facebook application deauthorization')
-        user = SocialUser.objects.get(
-            social_id=request.facebook.signed_request.user.id
-        )
+        user = SocialUser.objects.get_by_natural_key(request.facebook.signed_request.user.id)
 
         user.authorized = False
         user.save()

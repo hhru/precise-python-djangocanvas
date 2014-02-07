@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 from urlparse import parse_qs
 
 from django.db import models
-from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 
 from djangocanvas.settings import FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_SECRET_KEY
 from djangocanvas.api.facepy import GraphAPI
@@ -88,24 +88,11 @@ class OAuthToken(models.Model):
         self.save()
 
 
-class SocialUser(models.Model):
-    social_id = models.BigIntegerField(verbose_name=u'Идентификатор в социальной сети', unique=True)
+class SocialUser(User):
     provider = models.CharField(verbose_name=u'Социальная сеть', max_length=50)
-    first_name = models.CharField(verbose_name=u'Имя', max_length=255, blank=True, null=True)
-    last_name = models.CharField(verbose_name=u'Фамилия', max_length=255, blank=True, null=True)
     authorized = models.BooleanField(verbose_name=u'Авторизован', default=True)
     oauth_token = models.OneToOneField(u'OAuthtoken', blank=True, null=True,
                                        related_name='social_user')
-
-    # This field is required for correct login.
-    # Login function in Django send signal "user_logged_in" to which this field is updated.
-    last_login = models.DateTimeField(_('last login'), default=timezone.now)
-
-    # This field is required for correct render of flatpage.
-    is_active = True
-
-    # This field is required for correct render of flatpage.
-    is_staff = False
 
     class Meta:
         verbose_name = u'Пользователь социальной сети'
@@ -114,21 +101,33 @@ class SocialUser(models.Model):
     def __unicode__(self):
         return '%s, %s' % (self.social_id, self.provider)
 
+    @property
+    def social_id(self):
+        return self.get_username()
+
     @classmethod
     def create_facebook_user(cls, social_id, oauth_token, profile):
         return cls.objects.create(
-            social_id=social_id,
+            username=social_id,
             provider='facebook',
             oauth_token=oauth_token,
             first_name=profile.get('first_name'),
             last_name=profile.get('last_name'),
+            is_active=True,
+            is_staff=False,
+            is_superuser=False,
+            password=make_password(None),
         )
 
     @classmethod
     def create_vk_user(cls, vk_profile):
         return cls.objects.create(
-            social_id=vk_profile.get('uid'),
+            username=vk_profile.get('uid'),
             provider='vkontakte',
             first_name=vk_profile.get('first_name'),
             last_name=vk_profile.get('last_name'),
+            is_active=True,
+            is_staff=False,
+            is_superuser=False,
+            password=make_password(None),
         )
