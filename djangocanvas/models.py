@@ -31,7 +31,7 @@ class OAuthToken(models.Model):
     token = models.TextField(verbose_name=u'Token')
     """A string describing the OAuth token itself."""
 
-    issued_at = models.DateTimeField(verbose_name=u'Issued at')
+    issued_at = models.DateTimeField(verbose_name=u'Issued at', null=True, blank=True)
     """A ``datetime`` object describing when the token was issued."""
 
     expires_at = models.DateTimeField(verbose_name=u'Expires at', null=True, blank=True)

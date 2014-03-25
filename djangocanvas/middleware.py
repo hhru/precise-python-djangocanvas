@@ -222,10 +222,22 @@ class VkontakteMiddleware(SocialMiddleware):
                 del startup_vars['api_result']
                 request.session['vk_startup_vars'] = startup_vars
                 self._patch_request_with_vkapi(request)
+                token = self._get_oauth_token(request)
+                if token is not None:
+                    social_user.oauth_token = token
+                    social_user.save()
 
         else:
             request.META['VKONTAKTE_LOGIN_ERRORS'] = vk_form.errors
             logger.warning(u'Vkontakte login errors' + ': ' + ', '.join(vk_form.errors))
+
+    def _get_oauth_token(self, request):
+        if hasattr(request, 'session'):
+            if 'vk_startup_vars' in request.session and 'access_token' in request.session['vk_startup_vars']:
+                token = OAuthToken.objects.create(
+                    token=request.session['vk_startup_vars']['access_token']
+                )
+                return token
 
     def _patch_request_with_vkapi(self, request):
         """

@@ -106,7 +106,13 @@ def send_notification(user, message):
     if user.provider == 'vkontakte':
         vkapi = vkontakte.API(api_id=VK_APP_ID,
                               api_secret=VK_APP_SECRET)
-        vkapi.get('secure.sendNotification', client_secret=VK_APP_SECRET, uid=user.social_id, message=message)
+        vkapi.token = vkapi.get_server_access_token()
+        vkapi.get(
+            'secure.sendNotification',
+            uid=user.social_id,
+            message=message,
+            client_secret=VK_APP_SECRET
+        )
     else:
         token = get_application_access_token(FACEBOOK_APPLICATION_ID, FACEBOOK_APPLICATION_SECRET_KEY)
         graph = GraphAPI(token)
