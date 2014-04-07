@@ -4,8 +4,9 @@ import djangocanvas.settings
 from django.conf import settings
 from django.http import QueryDict, HttpResponse
 from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
 
-from djangocanvas.views import authorize_application
+from djangocanvas.views import authorize_application, deauthorize_application
 from djangocanvas.models import Facebook, OAuthToken, SocialUser
 
 from djangocanvas.utils import (
@@ -23,6 +24,7 @@ P3P_POLICY = getattr(settings, 'VK_P3P_POLICY', DEFAULT_P3P_POLICY)
 
 logger = getLogger('djangocanvas')
 
+
 def social_login(request, user):
     request.session['_social_auth_user_id'] = user.pk
 
@@ -35,6 +37,7 @@ class SocialAuthenticationMiddleware(object):
         except SocialUser.DoesNotExist:
             logger.warning(u'User with id "{0}" does not exist'.format(social_user_id))
             request.social_user = None
+
 
 class SocialMiddleware(object):
     """
@@ -159,6 +162,9 @@ class FacebookMiddleware(SocialMiddleware):
                 social_login(request, social_user)
 
             else:
+                if request.path == reverse('deauthorize_application'):
+                    return deauthorize_application(request)
+
                 return authorize_application(
                     request=request,
                     redirect_uri=get_post_authorization_redirect_url(request))
